@@ -18,6 +18,18 @@ arr=(
     9 1 2 3 4 5 6 7 8
 )
 
+transpose() {
+    for (( i = 0; i < $size; i++ )); do
+        for (( j = i + 1; j < $size; j++ )); do
+            first_idx=$(($size * $i + $j))
+            second_idx=$(($size * $j + $i))
+            t=${arr[$first_idx]}
+            arr[$first_idx]=${arr[$second_idx]}
+            arr[$second_idx]=$t
+        done
+    done
+}
+
 print_arr() {
     for i in ${!arr[@]}; do
 		# IF WE FILLED LINE WITH $SIZE NUMBERS MAKE NEW LINE
@@ -33,6 +45,8 @@ print_arr() {
 for (( round = 0; round < $(($RANDOM % $swaps + 5)); round++ )); do
 	# ARRAY WITH SQUARE BEGINING POSITIONS
     first_in_square=(0 3 6)
+
+    transpose
 
     for (( cycle = 0; cycle < $(($RANDOM % $col_swaps + 1)); cycle++ )); do
         # CHOOSE SQUARE TO SWAP IN    
