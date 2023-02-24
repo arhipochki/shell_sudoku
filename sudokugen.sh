@@ -2,16 +2,19 @@
 
 size=9
 swaps=100
+col_swaps=10
+row_swaps=10
+square_swaps=5
 # BASE GRID / MAIN RULE OF SUDOKU
 arr=(
     1 2 3 4 5 6 7 8 9
-    2 3 4 5 6 7 8 9 1
-    3 4 5 6 7 8 9 1 2
     4 5 6 7 8 9 1 2 3
-    5 6 7 8 9 1 2 3 4
-    6 7 8 9 1 2 3 4 5
     7 8 9 1 2 3 4 5 6
+    2 3 4 5 6 7 8 9 1
+    5 6 7 8 9 1 2 3 4
     8 9 1 2 3 4 5 6 7
+    3 4 5 6 7 8 9 1 2
+    6 7 8 9 1 2 3 4 5
     9 1 2 3 4 5 6 7 8
 )
 
@@ -28,30 +31,72 @@ print_arr() {
 }
 
 for (( round = 0; round < $(($RANDOM % $swaps + 5)); round++ )); do
-	# COLUMNS POSISTIONS TO SWAP BETWEEN
-    first_col=$(($RANDOM % $size))
-    second_col=$(($RANDOM % $size))
+	# ARRAY WITH SQUARE BEGINING POSITIONS
+    first_in_square=(0 3 6)
 
-    for ((i = 0; i < $size; i++)); do
-        t=${arr[$first_col]}
-        arr[$first_col]=${arr[$second_col]}
-        arr[$second_col]=$t
+    for (( cycle = 0; cycle < $(($RANDOM % $col_swaps + 1)); cycle++ )); do
+        # CHOOSE SQUARE TO SWAP IN    
+        square=${first_in_square[$(($RANDOM % 3))]}
 
-        first_col=$(expr $first_col + $size)
-        second_col=$(expr $second_col + $size)
+        # COLUMNS POSISTIONS TO SWAP BETWEEN
+        first_col=$(( $(($RANDOM % 3)) + $square ))
+        second_col=$(( $(($RANDOM % 3)) + $square ))
+
+        for ((i = 0; i < $size; i++)); do
+            t=${arr[$first_col]}
+            arr[$first_col]=${arr[$second_col]}
+            arr[$second_col]=$t
+
+            first_col=$(expr $first_col + $size)
+            second_col=$(expr $second_col + $size)
+        done
     done
 
-	# ARRAY WITH ROWS BEGINING POSITIONS
-    first_in_row=(0 9 18 27 36 45 54 63 72)
+    for (( cycle = 0; cycle < $(($RANDOM % $row_swaps + 1)); cycle++ )); do
+        # CHOOSE SQUARE TO SWAP IN    
+        square=${first_in_square[$(($RANDOM % 3))]}
 
-	# ROWS POSITIONS TO SWAP BETWEEN
-    first_row=${first_in_row[$(($RANDOM % $size))]}
-    second_row=${first_in_row[$(($RANDOM % $size))]}
+        # ROWS POSITIONS TO SWAP BETWEEN
+        first_row=$(( $(($RANDOM % 3)) * $size + $square * $size ))
+        second_row=$(( $(($RANDOM % 3)) * $size + $square * $size ))
 
-    for i in $(seq 0 $(($size - 1))); do
-        t=${arr[$first_row + $i]}
-        arr[$first_row + $i]=${arr[$second_row + $i]}
-        arr[$second_row + $i]=$t
+        for i in $(seq 0 $(($size - 1))); do
+            t=${arr[$first_row + $i]}
+            arr[$first_row + $i]=${arr[$second_row + $i]}
+            arr[$second_row + $i]=$t
+        done
+    done
+
+    for (( cycle = 0; cycle < $(($RANDOM % $square_swaps + 1)); cycle++ )); do
+        first_square=${first_in_square[$(($RANDOM % 3))]}
+        second_square=${first_in_square[$(($RANDOM % 3))]}
+
+        for i in $(seq 0 2); do
+            # ROWS POSITIONS TO SWAP BETWEEN
+            first_row=$(( $i * $size + $first_square * $size ))
+            second_row=$(( $i * $size + $second_square * $size ))
+
+            for j in $(seq 0 $(($size - 1))); do
+                t=${arr[$first_row + $j]}
+                arr[$first_row + $j]=${arr[$second_row + $j]}
+                arr[$second_row + $j]=$t
+            done
+        done
+
+        for i in $(seq 0 2); do
+            # COLUMNS POSISTIONS TO SWAP BETWEEN
+            first_col=$(( $i + $first_square ))
+            second_col=$(( $i + $second_square ))
+
+            for ((i = 0; i < $size; i++)); do
+                t=${arr[$first_col]}
+                arr[$first_col]=${arr[$second_col]}
+                arr[$second_col]=$t
+
+                first_col=$(expr $first_col + $size)
+                second_col=$(expr $second_col + $size)
+            done
+        done
     done
 done
 
@@ -59,7 +104,7 @@ echo "Generated map:"
 print_arr
 
 # AMOUNT OF ERASED CELLS
-difficult=$(expr ${#arr[@]} - $(($RANDOM % 35 + 20)))
+difficult=$(expr ${#arr[@]} - $(($RANDOM % 40 + 10)))
 
 for (( i = 0; i < $difficult; i++)); do
     arr[$(($RANDOM % ${#arr[@]}))]=0
