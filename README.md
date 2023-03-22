@@ -1,3 +1,3 @@
 # Generating sudoku map in BASH
 
-![Image](example.jpg)
+![Image](example.png)
